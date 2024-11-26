@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verify } from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const secretKey = new TextEncoder().encode(JWT_SECRET);
 
 // Configuration flag to disable authentication
 const AUTH_ENABLED = false;
@@ -10,7 +11,7 @@ const AUTH_ENABLED = false;
 // Add paths that don't require authentication
 const publicPaths = ['/auth/login', '/auth/register', '/auth/forgot-password'];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // If authentication is disabled, allow all requests
   if (!AUTH_ENABLED) {
     return NextResponse.next();
@@ -33,7 +34,7 @@ export function middleware(request: NextRequest) {
 
   try {
     // Verify the token
-    verify(token, JWT_SECRET);
+    await jwtVerify(token, secretKey);
     return NextResponse.next();
   } catch (error) {
     // Redirect to login if token is invalid

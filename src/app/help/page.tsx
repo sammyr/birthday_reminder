@@ -7,7 +7,7 @@ export default function HelpPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col items-center mb-8">
         <div className="w-[600px] h-[400px] bg-gray-200 flex items-center justify-center mb-8">
-          <span className="text-gray-500 text-lg">Logo Placeholder 600x400</span>
+          <span className="text-gray-500 text-lg">Logo</span>
         </div>
         <h1 className="text-3xl font-bold mb-2">Arbeitsplan Manager</h1>
         <p className="text-gray-600 mb-4">Version 0.5</p>
@@ -92,7 +92,7 @@ export default function HelpPage() {
           <h2 className="text-2xl font-semibold mb-4">Rechtliches</h2>
           <div className="bg-white shadow-md rounded-lg p-6">
             <p className="text-gray-600 mb-4">
-              2024 AT. Alle Rechte vorbehalten.
+              2024 Sammy Richter. Alle Rechte vorbehalten.
             </p>
             <div className="space-y-2">
               <p className="text-gray-600">Version: 0.5</p>

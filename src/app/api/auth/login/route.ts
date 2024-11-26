@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { sign } from 'jsonwebtoken';
+import { SignJWT } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const secretKey = new TextEncoder().encode(JWT_SECRET);
 
 export async function POST(req: Request) {
   try {
@@ -11,11 +12,11 @@ export async function POST(req: Request) {
     // Here you would typically validate against your database
     // This is just a mock implementation
     if (email === 'test@example.com' && password === 'password') {
-      const token = sign(
-        { email, id: '1', role: 'admin' },
-        JWT_SECRET,
-        { expiresIn: '1d' }
-      );
+      const token = await new SignJWT({ email, id: '1', role: 'admin' })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('1d')
+        .sign(secretKey);
 
       return NextResponse.json({ token });
     }

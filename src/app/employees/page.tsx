@@ -53,10 +53,13 @@ export default function EmployeesPage() {
         await dbService.updateEmployee(editingEmployee.id, formData);
       } else {
         // Add default values for required fields when creating a new employee
+        const now = new Date().toISOString();
         const newEmployee = {
           ...formData,
           role: formData.role || 'user',
           storeId: formData.storeId || 1, // Default store ID
+          createdAt: now,
+          updatedAt: now,
         };
         await dbService.addEmployee(newEmployee);
       }
