@@ -1,0 +1,10 @@
+{
+  "/shifts/page": "app/shifts/page.js",
+  "/workplan/page": "app/workplan/page.js",
+  "/help/page": "app/help/page.js",
+  "/api/db/route": "app/api/db/route.js",
+  "/employees/page": "app/employees/page.js",
+  "/not-found": "app/not-found.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/settings/page": "app/settings/page.js"
+}
