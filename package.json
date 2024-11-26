@@ -19,6 +19,7 @@
     "firebase": "^10.14.1",
     "jose": "^5.9.6",
     "js-cookie": "^3.0.5",
+    "jsonwebtoken": "^9.0.2",
     "next": "14.0.3",
     "react": "^18",
     "react-big-calendar": "^1.8.5",
