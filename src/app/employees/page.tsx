@@ -9,6 +9,8 @@ interface EmployeeFormData {
   name: string;
   email: string;
   phone: string;
+  role?: string;
+  storeId?: number;
 }
 
 export default function EmployeesPage() {
@@ -37,6 +39,7 @@ export default function EmployeesPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
+
       ...prev,
       [name]: value
     }));
@@ -49,7 +52,13 @@ export default function EmployeesPage() {
       if (editingEmployee) {
         await dbService.updateEmployee(editingEmployee.id, formData);
       } else {
-        await dbService.addEmployee(formData);
+        // Add default values for required fields when creating a new employee
+        const newEmployee = {
+          ...formData,
+          role: formData.role || 'user',
+          storeId: formData.storeId || 1, // Default store ID
+        };
+        await dbService.addEmployee(newEmployee);
       }
       await loadEmployees();
       setFormData({ name: '', email: '', phone: '' });

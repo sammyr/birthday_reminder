@@ -753,7 +753,7 @@
       "id": 82,
       "storeId": 57604,
       "employeeId": "3",
-      "date": "2024-11-14",
+      "date": "2024-11-07",
       "startTime": "16:00",
       "endTime": "02:00",
       "shiftId": "270c0285-99c6-48df-b81f-cc8191370b5e"
@@ -804,6 +804,12 @@
       "action": "Schicht erstellt",
       "details": "Neue Schicht für 2 am 2024-11-26",
       "timestamp": "2024-11-26T21:54:24.531Z"
+    },
+    {
+      "id": 7,
+      "action": "Schicht aktualisiert",
+      "details": "Schicht 82 wurde aktualisiert",
+      "timestamp": "2024-11-26T22:48:31.628Z"
     }
   ]
 }
