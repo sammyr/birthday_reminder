@@ -389,7 +389,7 @@
       "id": 41,
       "storeId": 12,
       "employeeId": 3,
-      "date": "2024-11-13",
+      "date": "2024-11-06",
       "startTime": "01:20",
       "endTime": "17:00",
       "shiftId": "c4c2f9b0-6879-49d3-b189-516299623978"
@@ -825,6 +825,12 @@
       "action": "Schicht erstellt",
       "details": "Neue Schicht für 2 am 2024-10-31",
       "timestamp": "2024-11-27T01:02:26.429Z"
+    },
+    {
+      "id": 9,
+      "action": "Schicht aktualisiert",
+      "details": "Schicht 41 wurde aktualisiert",
+      "timestamp": "2024-11-27T01:06:17.894Z"
     }
   ]
 }
