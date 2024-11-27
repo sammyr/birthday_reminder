@@ -1,29 +1,75 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { dbService } from '@/lib/db';
 
 interface Settings {
-  emailTemplates: any[];
-  // Add other settings as needed
+  reminderDays: number;
+  emailNotifications: boolean;
+  emailTemplate: string;
+  emailAddress: string;
 }
 
 interface SettingsContextType {
   settings: Settings;
-  updateSettings: (newSettings: Partial<Settings>) => void;
+  updateSettings: (newSettings: Partial<Settings>) => Promise<void>;
 }
 
 const defaultSettings: Settings = {
-  emailTemplates: [],
+  reminderDays: 7,
+  emailNotifications: false,
+  emailTemplate: 'Erinnerung: {name} hat in {days} Geburtstag!\n\nHallo,\n\nich möchte Sie daran erinnern, dass {name} in {days} {age} Jahre alt wird.\n\nViele Grüße\n{sender}',
+  emailAddress: ''
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const updateSettings = (newSettings: Partial<Settings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
+  // Load settings from database on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const dbSettings = await dbService.getSettings();
+        if (dbSettings) {
+          setSettings(dbSettings);
+        }
+      } catch (error) {
+        console.error('Failed to load settings from database:', error);
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  const updateSettings = async (newSettings: Partial<Settings>) => {
+    const updatedSettings = { ...settings, ...newSettings };
+    
+    try {
+      // Update database
+      await dbService.updateSettings(updatedSettings);
+      
+      // Update local state
+      setSettings(updatedSettings);
+
+      // Add log entry
+      await dbService.addLogEntry(
+        'Einstellungen aktualisiert',
+        'Die Einstellungen wurden erfolgreich aktualisiert'
+      );
+    } catch (error) {
+      console.error('Failed to update settings:', error);
+      throw error;
+    }
   };
+
+  if (!isInitialized) {
+    return null; // or a loading spinner
+  }
 
   return (
     <SettingsContext.Provider value={{ settings, updateSettings }}>

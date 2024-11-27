@@ -3,12 +3,20 @@ import { Store } from '@/types/store';
 import { Shift } from '@/types/shift';
 import { LogEntry } from '@/types/log';
 
-let dbData: {
+interface DbData {
   employees: Employee[];
   stores: Store[];
   shifts: Shift[];
   logs: LogEntry[];
-} | null = null;
+  settings: {
+    reminderDays: number;
+    emailNotifications: boolean;
+    emailTemplate: string;
+    emailAddress: string;
+  };
+}
+
+let dbData: DbData | null = null;
 
 async function readDb() {
   if (!dbData) {
@@ -21,7 +29,7 @@ async function readDb() {
   return dbData!;
 }
 
-async function writeDb(data: typeof dbData) {
+async function writeDb(data: DbData) {
   const response = await fetch('/api/db', {
     method: 'PUT',
     headers: {
@@ -244,5 +252,18 @@ export const dbService = {
       'Schicht gelöscht',
       `Schicht ${id} wurde gelöscht`
     );
-  }
+  },
+
+  // Settings operations
+  getSettings: async () => {
+    const db = await readDb();
+    return db.settings;
+  },
+
+  updateSettings: async (settings: DbData['settings']) => {
+    const db = await readDb();
+    db.settings = settings;
+    await writeDb(db);
+    return settings;
+  },
 };

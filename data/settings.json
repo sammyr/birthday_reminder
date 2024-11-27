@@ -1,0 +1,6 @@
+{
+  "reminderDays": 7,
+  "emailNotifications": false,
+  "emailTemplate": "Erinnerung: {name} hat in {days} Geburtstag!\n\nHallo,\n\nich möchte Sie daran erinnern, dass {name} in {days} {age} Jahre alt wird.\n\nViele Grüße\n{sender}",
+  "emailAddress": ""
+}
