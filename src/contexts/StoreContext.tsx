@@ -9,8 +9,8 @@ interface StoreContextType {
   selectedStore: Store | null;
   setSelectedStore: (store: Store | null) => void;
   addStore: (store: Omit<Store, 'id'>) => Promise<void>;
-  updateStore: (id: number, store: Partial<Store>) => Promise<void>;
-  deleteStore: (id: number) => Promise<void>;
+  updateStore: (id: string, store: Partial<Store>) => Promise<void>;
+  deleteStore: (id: string) => Promise<void>;
   loading: boolean;
   error: string | null;
 }
@@ -53,7 +53,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function updateStore(id: number, store: Partial<Store>) {
+  async function updateStore(id: string, store: Partial<Store>) {
     try {
       await dbService.updateStore(id, store);
       const updatedStore = await dbService.getStore(id);
@@ -69,7 +69,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function deleteStore(id: number) {
+  async function deleteStore(id: string) {
     try {
       await dbService.deleteStore(id);
       setStores(prev => prev.filter(store => store.id !== id));

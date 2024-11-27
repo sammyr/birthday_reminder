@@ -28,10 +28,11 @@ export default function StoreForm({ store, onClose }: StoreFormProps) {
   const onSubmit = async (data: StoreFormData) => {
     try {
       setIsSubmitting(true);
+      const now = new Date();
       if (store) {
-        await updateStore(store.id, data);
+        await updateStore(store.id, { ...data, updatedAt: now });
       } else {
-        await addStore(data);
+        await addStore({ ...data, createdAt: now, updatedAt: now });
       }
       onClose();
     } catch (error) {

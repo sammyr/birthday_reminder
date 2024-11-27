@@ -1,13 +1,20 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 export default function HelpPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col items-center mb-8">
-        <div className="w-[600px] h-[400px] bg-gray-200 flex items-center justify-center mb-8">
-          <span className="text-gray-500 text-lg">Logo</span>
+        <div className="relative w-[600px] h-[400px] mb-8">
+          <Image
+            src="/images/logo.jpg"
+            alt="Arbeitsplan Manager Logo"
+            fill
+            style={{ objectFit: 'contain' }}
+            priority
+          />
         </div>
         <h1 className="text-3xl font-bold mb-2">Arbeitsplan Manager</h1>
         <p className="text-gray-600 mb-4">Version 0.5</p>

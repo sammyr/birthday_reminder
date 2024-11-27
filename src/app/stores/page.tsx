@@ -31,6 +31,11 @@ export default function StoresPage() {
       const store: Store = {
         id: crypto.randomUUID(),
         name: newStore,
+        address: '',
+        phone: '',
+        email: '',
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
       storage.saveStore(store);
     }

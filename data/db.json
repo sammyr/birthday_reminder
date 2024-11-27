@@ -766,6 +766,15 @@
       "startTime": "16:00",
       "endTime": "02:00",
       "shiftId": "270c0285-99c6-48df-b81f-cc8191370b5e"
+    },
+    {
+      "id": 84,
+      "storeId": 57604,
+      "employeeId": "2",
+      "date": "2024-10-31",
+      "startTime": "16:00",
+      "endTime": "02:00",
+      "shiftId": "270c0285-99c6-48df-b81f-cc8191370b5e"
     }
   ],
   "logs": [
@@ -810,6 +819,12 @@
       "action": "Schicht aktualisiert",
       "details": "Schicht 82 wurde aktualisiert",
       "timestamp": "2024-11-26T22:48:31.628Z"
+    },
+    {
+      "id": 8,
+      "action": "Schicht erstellt",
+      "details": "Neue Schicht für 2 am 2024-10-31",
+      "timestamp": "2024-11-27T01:02:26.429Z"
     }
   ]
 }

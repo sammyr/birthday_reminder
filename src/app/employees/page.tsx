@@ -58,8 +58,8 @@ export default function EmployeesPage() {
           ...formData,
           role: formData.role || 'user',
           storeId: formData.storeId || 1, // Default store ID
-          createdAt: now,
-          updatedAt: now,
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
         };
         await dbService.addEmployee(newEmployee);
       }
