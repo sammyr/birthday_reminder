@@ -1,5 +1,5 @@
 import Dexie from 'dexie';
-import { Birthday } from '@/types/birthday';
+import { Birthday } from '@/types/Birthday';
 
 class BirthdayDB extends Dexie {
   birthdays!: Dexie.Table<Birthday, string>;
@@ -20,54 +20,32 @@ const db = typeof window === 'undefined'
 // Service functions that handle both client and server environments
 const birthdayService = {
   async getAllBirthdays(): Promise<Birthday[]> {
-    if (typeof window === 'undefined') {
-      // Server-side: fetch from API
-      try {
-        const response = await fetch('/api/birthdays');
-        if (!response.ok) throw new Error('Failed to fetch birthdays');
-        return response.json();
-      } catch (error) {
-        console.error('Server-side fetch error:', error);
-        return [];
-      }
-    }
-    
-    // Client-side: use IndexedDB
-    try {
-      return await db!.birthdays.toArray();
-    } catch (error) {
-      console.error('IndexedDB error:', error);
-      return [];
-    }
+    if (!db) return [];
+    return await db.birthdays.toArray();
+  },
+
+  async getBirthday(id: string): Promise<Birthday | undefined> {
+    if (!db) return undefined;
+    return await db.birthdays.get(id);
   },
 
   async addBirthday(birthday: Omit<Birthday, 'id'>): Promise<string> {
-    if (typeof window === 'undefined') {
-      throw new Error('Cannot add birthday on server-side');
-    }
-
+    if (!db) throw new Error('Database not available');
     const id = crypto.randomUUID();
-    const newBirthday = { ...birthday, id };
-    
-    await db!.birthdays.add(newBirthday);
+    await db.birthdays.add({ ...birthday, id });
     return id;
   },
 
   async updateBirthday(birthday: Birthday): Promise<void> {
-    if (typeof window === 'undefined') {
-      throw new Error('Cannot update birthday on server-side');
-    }
-
-    await db!.birthdays.put(birthday);
+    if (!db) throw new Error('Database not available');
+    await db.birthdays.put(birthday);
   },
 
   async deleteBirthday(id: string): Promise<void> {
-    if (typeof window === 'undefined') {
-      throw new Error('Cannot delete birthday on server-side');
-    }
-
-    await db!.birthdays.delete(id);
+    if (!db) throw new Error('Database not available');
+    await db.birthdays.delete(id);
   }
 };
 
 export { db, birthdayService };
+export type { Birthday };

@@ -1,13 +1,10 @@
-import { Employee } from '@/types/employee';
 import { Store } from '@/types/store';
-import { Shift } from '@/types/shift';
-import { LogEntry } from '@/types/log';
+import { Birthday } from '@/types/Birthday';
+import { v4 as uuidv4 } from 'uuid';
 
 interface DbData {
-  employees: Employee[];
   stores: Store[];
-  shifts: Shift[];
-  logs: LogEntry[];
+  birthdays: Birthday[];
   settings: {
     reminderDays: number;
     emailNotifications: boolean;
@@ -16,254 +13,172 @@ interface DbData {
   };
 }
 
+// In-memory cache of the database
 let dbData: DbData | null = null;
 
-async function readDb() {
-  if (!dbData) {
+// Read database
+async function readDb(): Promise<DbData> {
+  if (dbData) return dbData;
+
+  try {
     const response = await fetch('/api/db');
     if (!response.ok) {
       throw new Error('Failed to fetch database');
     }
-    dbData = await response.json();
+    const data = await response.json();
+    dbData = data;
+    return data;
+  } catch (error) {
+    console.error('Error reading database:', error);
+    throw error;
   }
-  return dbData!;
 }
 
-async function writeDb(data: DbData) {
-  const response = await fetch('/api/db', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
+// Write to database
+async function writeDb(data: DbData): Promise<void> {
+  try {
+    const response = await fetch('/api/db', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to write to database');
+    if (!response.ok) {
+      throw new Error('Failed to write to database');
+    }
+
+    // Update cache
+    dbData = data;
+  } catch (error) {
+    console.error('Error writing to database:', error);
+    throw error;
   }
-
-  dbData = data;
 }
 
+// Birthday operations
+export async function getAllBirthdays(): Promise<Birthday[]> {
+  const data = await readDb();
+  return data.birthdays || [];
+}
+
+export async function getBirthday(id: string): Promise<Birthday | undefined> {
+  const data = await readDb();
+  return data.birthdays?.find(b => b.id === id);
+}
+
+export async function addBirthday(birthday: Omit<Birthday, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  const data = await readDb();
+  const now = new Date().toISOString();
+  const newBirthday: Birthday = {
+    ...birthday,
+    id: uuidv4(),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  data.birthdays = [...(data.birthdays || []), newBirthday];
+  await writeDb(data);
+  return newBirthday.id;
+}
+
+export async function updateBirthday(id: string, birthday: Partial<Omit<Birthday, 'id' | 'createdAt' | 'updatedAt'>>): Promise<void> {
+  const data = await readDb();
+  const index = data.birthdays?.findIndex(b => b.id === id);
+  
+  if (index === undefined || index === -1) {
+    throw new Error('Birthday not found');
+  }
+
+  data.birthdays[index] = {
+    ...data.birthdays[index],
+    ...birthday,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await writeDb(data);
+}
+
+export async function deleteBirthday(id: string): Promise<void> {
+  const data = await readDb();
+  data.birthdays = data.birthdays?.filter(b => b.id !== id) || [];
+  await writeDb(data);
+}
+
+// Store operations
+export async function getAllStores(): Promise<Store[]> {
+  const data = await readDb();
+  return data.stores || [];
+}
+
+export async function getStore(id: string): Promise<Store | undefined> {
+  const data = await readDb();
+  return data.stores?.find(s => s.id === id);
+}
+
+export async function addStore(store: Omit<Store, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  const data = await readDb();
+  const now = new Date().toISOString();
+  const newStore: Store = {
+    ...store,
+    id: uuidv4(),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  data.stores = [...(data.stores || []), newStore];
+  await writeDb(data);
+  return newStore.id;
+}
+
+export async function updateStore(id: string, store: Partial<Omit<Store, 'id' | 'createdAt' | 'updatedAt'>>): Promise<void> {
+  const data = await readDb();
+  const index = data.stores?.findIndex(s => s.id === id);
+  
+  if (index === undefined || index === -1) {
+    throw new Error('Store not found');
+  }
+
+  data.stores[index] = {
+    ...data.stores[index],
+    ...store,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await writeDb(data);
+}
+
+export async function deleteStore(id: string): Promise<void> {
+  const data = await readDb();
+  data.stores = data.stores?.filter(s => s.id !== id) || [];
+  await writeDb(data);
+}
+
+// Settings operations
+export async function getSettings(): Promise<DbData['settings']> {
+  const data = await readDb();
+  return data.settings;
+}
+
+export async function updateSettings(settings: DbData['settings']): Promise<void> {
+  const data = await readDb();
+  data.settings = settings;
+  await writeDb(data);
+}
+
+// Export the service object for backward compatibility
 export const dbService = {
-  // Store operations
-  getAllStores: async (): Promise<Store[]> => {
-    const db = await readDb();
-    return db.stores;
-  },
-
-  getStore: async (id: number): Promise<Store | undefined> => {
-    const db = await readDb();
-    return db.stores.find(store => store.id === id);
-  },
-
-  addStore: async (store: Omit<Store, 'id'>): Promise<number> => {
-    const db = await readDb();
-    
-    // Generate new ID
-    const newId = db.stores.length > 0 ? Math.max(...db.stores.map(s => s.id)) + 1 : 1;
-    
-    const newStore: Store = {
-      id: newId,
-      ...store
-    };
-
-    db.stores.push(newStore);
-    await writeDb(db);
-    
-    return newId;
-  },
-
-  updateStore: async (id: number, store: Partial<Store>): Promise<void> => {
-    const db = await readDb();
-    const index = db.stores.findIndex(store => store.id === id);
-    
-    if (index === -1) {
-      throw new Error('Store not found');
-    }
-    
-    db.stores[index] = {
-      ...db.stores[index],
-      ...store
-    };
-    
-    await writeDb(db);
-  },
-
-  deleteStore: async (id: number): Promise<void> => {
-    const db = await readDb();
-    const index = db.stores.findIndex(store => store.id === id);
-    
-    if (index === -1) {
-      throw new Error('Store not found');
-    }
-    
-    db.stores.splice(index, 1);
-    await writeDb(db);
-  },
-
-  // Employee operations
-  getAllEmployees: async (): Promise<Employee[]> => {
-    const db = await readDb();
-    return db.employees;
-  },
-
-  getEmployee: async (id: number): Promise<Employee | undefined> => {
-    const db = await readDb();
-    return db.employees.find(employee => employee.id === id);
-  },
-
-  addEmployee: async (employee: Omit<Employee, 'id'>): Promise<number> => {
-    const db = await readDb();
-    
-    // Generate new ID
-    const newId = db.employees.length > 0 ? Math.max(...db.employees.map(e => e.id)) + 1 : 1;
-    
-    const newEmployee: Employee = {
-      id: newId,
-      ...employee
-    };
-
-    db.employees.push(newEmployee);
-    await writeDb(db);
-    
-    return newId;
-  },
-
-  updateEmployee: async (id: number, employee: Partial<Employee>): Promise<void> => {
-    const db = await readDb();
-    const index = db.employees.findIndex(employee => employee.id === id);
-    
-    if (index === -1) {
-      throw new Error('Employee not found');
-    }
-    
-    db.employees[index] = {
-      ...db.employees[index],
-      ...employee
-    };
-    
-    await writeDb(db);
-  },
-
-  deleteEmployee: async (id: number): Promise<void> => {
-    const db = await readDb();
-    const index = db.employees.findIndex(employee => employee.id === id);
-    
-    if (index === -1) {
-      throw new Error('Employee not found');
-    }
-    
-    db.employees.splice(index, 1);
-    await writeDb(db);
-  },
-
-  // Log operations
-  getLogEntries: async (): Promise<LogEntry[]> => {
-    const db = await readDb();
-    return db.logs || [];
-  },
-
-  addLogEntry: async (action: string, details: string): Promise<void> => {
-    const db = await readDb();
-    if (!db.logs) {
-      db.logs = [];
-    }
-
-    const newLog: LogEntry = {
-      id: Math.max(0, ...db.logs.map(log => log.id)) + 1,
-      action,
-      details,
-      timestamp: new Date().toISOString(),
-    };
-
-    db.logs.push(newLog);
-    await writeDb(db);
-  },
-
-  // Shift operations
-  getShiftsByStore: async (storeId: number): Promise<Shift[]> => {
-    console.log('Getting shifts for store:', storeId);
-    const db = await readDb();
-    const shifts = db.shifts.filter(shift => shift.storeId === storeId);
-    console.log('Found shifts:', shifts);
-    return shifts;
-  },
-
-  addShift: async (shiftData: Omit<Shift, 'id'>): Promise<number> => {
-    console.log('Adding shift:', shiftData);
-    const db = await readDb();
-    
-    // Generate new ID
-    const newId = db.shifts.length > 0 ? Math.max(...db.shifts.map(s => s.id)) + 1 : 1;
-    
-    const newShift: Shift = {
-      id: newId,
-      ...shiftData
-    };
-
-    console.log('Created new shift:', newShift);
-    
-    db.shifts.push(newShift);
-    await writeDb(db);
-    
-    // Add log entry
-    await dbService.addLogEntry(
-      'Schicht erstellt',
-      `Neue Schicht für ${shiftData.employeeId} am ${shiftData.date}`
-    );
-    
-    return newId;
-  },
-
-  updateShift: async (id: number, shiftData: Partial<Shift>): Promise<void> => {
-    const db = await readDb();
-    const index = db.shifts.findIndex(shift => shift.id === id);
-    
-    if (index === -1) {
-      throw new Error('Shift not found');
-    }
-    
-    const oldShift = db.shifts[index];
-    const updatedShift = { ...oldShift, ...shiftData };
-    db.shifts[index] = updatedShift;
-    await writeDb(db);
-    
-    // Add log entry
-    await dbService.addLogEntry(
-      'Schicht aktualisiert',
-      `Schicht ${id} wurde aktualisiert`
-    );
-  },
-
-  deleteShift: async (id: number): Promise<void> => {
-    const db = await readDb();
-    const index = db.shifts.findIndex(shift => shift.id === id);
-    
-    if (index === -1) {
-      throw new Error('Shift not found');
-    }
-    
-    db.shifts.splice(index, 1);
-    await writeDb(db);
-    
-    // Add log entry
-    await dbService.addLogEntry(
-      'Schicht gelöscht',
-      `Schicht ${id} wurde gelöscht`
-    );
-  },
-
-  // Settings operations
-  getSettings: async () => {
-    const db = await readDb();
-    return db.settings;
-  },
-
-  updateSettings: async (settings: DbData['settings']) => {
-    const db = await readDb();
-    db.settings = settings;
-    await writeDb(db);
-    return settings;
-  },
+  getAllBirthdays,
+  getBirthday,
+  addBirthday,
+  updateBirthday,
+  deleteBirthday,
+  getAllStores,
+  getStore,
+  addStore,
+  updateStore,
+  deleteStore,
+  getSettings,
+  updateSettings,
 };

@@ -1,16 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { Store } from '@/types/store';
-import { dbService } from '@/lib/db';
+import { storage } from '@/utils/storage';
 
 interface StoreContextType {
   stores: Store[];
   selectedStore: Store | null;
   setSelectedStore: (store: Store | null) => void;
-  addStore: (store: Omit<Store, 'id'>) => Promise<void>;
-  updateStore: (id: string, store: Partial<Store>) => Promise<void>;
-  deleteStore: (id: string) => Promise<void>;
   loading: boolean;
   error: string | null;
 }
@@ -29,7 +26,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   async function loadStores() {
     try {
-      const storesData = await dbService.getAllStores();
+      const storesData = storage.getStores();
       setStores(storesData);
       setError(null);
     } catch (err) {
@@ -40,55 +37,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function addStore(store: Omit<Store, 'id'>) {
-    try {
-      const id = await dbService.addStore(store);
-      const newStore = await dbService.getStore(id);
-      if (newStore) {
-        setStores(prev => [...prev, newStore]);
-      }
-    } catch (err) {
-      setError('Failed to add store');
-      console.error('Error adding store:', err);
-    }
-  }
-
-  async function updateStore(id: string, store: Partial<Store>) {
-    try {
-      await dbService.updateStore(id, store);
-      const updatedStore = await dbService.getStore(id);
-      if (updatedStore) {
-        setStores(prev => prev.map(s => s.id === id ? updatedStore : s));
-        if (selectedStore?.id === id) {
-          setSelectedStore(updatedStore);
-        }
-      }
-    } catch (err) {
-      setError('Failed to update store');
-      console.error('Error updating store:', err);
-    }
-  }
-
-  async function deleteStore(id: string) {
-    try {
-      await dbService.deleteStore(id);
-      setStores(prev => prev.filter(store => store.id !== id));
-      if (selectedStore?.id === id) {
-        setSelectedStore(null);
-      }
-    } catch (err) {
-      setError('Failed to delete store');
-      console.error('Error deleting store:', err);
-    }
-  }
-
-  const value = {
+  const value: StoreContextType = {
     stores,
     selectedStore,
     setSelectedStore,
-    addStore,
-    updateStore,
-    deleteStore,
     loading,
     error
   };

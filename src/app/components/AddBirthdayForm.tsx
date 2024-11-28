@@ -12,8 +12,7 @@ export default function AddBirthdayForm({ onSubmit }: AddBirthdayFormProps) {
     formState: { errors }
   } = useForm<Omit<Birthday, 'id'>>({
     defaultValues: {
-      reminderDays: 7,
-      active: true
+      reminderDays: 7
     }
   });
 

@@ -10,9 +10,11 @@ export default function ClientLayout({
   children: React.ReactNode
 }) {
   useEffect(() => {
-    db.open().catch((err) => {
-      console.error('Failed to open database:', err);
-    });
+    if (db) {
+      db.open().catch((err) => {
+        console.error('Failed to open database:', err);
+      });
+    }
   }, []);
 
   return (

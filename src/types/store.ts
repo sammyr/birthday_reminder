@@ -4,6 +4,6 @@ export interface Store {
   address: string;
   phone: string;
   email: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
 }

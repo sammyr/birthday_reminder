@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Cookies from 'js-cookie';
 import type { User } from '@/types/auth';
 
 interface AuthContextType {
@@ -25,35 +24,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    const token = Cookies.get('token');
+    const token = localStorage.getItem('auth_token');
     if (token) {
       // Here you would typically validate the token and get user data
-      // This is just a mock implementation
-      const userData: User = {
-        id: '1',
-        email: 'test@example.com',
-        name: 'Test User',
-        role: 'admin',
-      };
-      setUser(userData);
+      try {
+        const userData = JSON.parse(localStorage.getItem('user_data') || '');
+        setUser(userData);
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
+      }
     }
     setIsLoading(false);
   }, []);
 
-  const login = (token: string) => {
-    Cookies.set('token', token, { expires: 1 }); // 1 day
-    // Here you would typically decode the token and set user data
-    const userData: User = {
-      id: '1',
-      email: 'test@example.com',
-      name: 'Test User',
-      role: 'admin',
-    };
-    setUser(userData);
+  const login = async (token: string) => {
+    try {
+      // Here you would typically decode the token and get user data
+      // For now, we'll just store the token
+      localStorage.setItem('auth_token', token);
+      
+      // Mock user data - replace this with actual user data from your token
+      const userData: User = {
+        id: '1',
+        email: 'user@example.com',
+        name: 'User',
+        role: 'user'  // Added the required role field
+      };
+      localStorage.setItem('user_data', JSON.stringify(userData));
+      setUser(userData);
+      router.push('/');
+    } catch (error) {
+      console.error('Login failed:', error);
+      logout();
+    }
   };
 
   const logout = () => {
-    Cookies.remove('token');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_data');
     setUser(null);
     router.push('/auth/login');
   };
@@ -65,4 +75,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}

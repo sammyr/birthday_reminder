@@ -1,11 +1,20 @@
 [
   {
-    "reminderDays": 2,
+    "reminderDays": 3,
     "active": true,
     "name": "Sammy",
     "date": "1977-04-20",
     "id": "f1a8d502-f947-449b-9347-c4902fc016ca",
     "interests": "Golfen",
     "notes": ""
+  },
+  {
+    "reminderDays": 8,
+    "active": true,
+    "name": "Ezra",
+    "interests": "Kacken, Fäkalien",
+    "notes": "Weglaufer",
+    "date": "1976-03-04",
+    "id": "bdb242f7-6add-42fa-91d6-d270a6557a43"
   }
 ]

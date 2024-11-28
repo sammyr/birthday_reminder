@@ -13,6 +13,7 @@ interface Settings {
 interface SettingsContextType {
   settings: Settings;
   updateSettings: (newSettings: Partial<Settings>) => Promise<void>;
+  loading: boolean;
 }
 
 const defaultSettings: Settings = {
@@ -26,11 +27,13 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
+  const [loading, setLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Load settings from database on mount
   useEffect(() => {
     const loadSettings = async () => {
+      setLoading(true);
       try {
         const dbSettings = await dbService.getSettings();
         if (dbSettings) {
@@ -39,6 +42,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('Failed to load settings from database:', error);
       } finally {
+        setLoading(false);
         setIsInitialized(true);
       }
     };
@@ -55,12 +59,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       
       // Update local state
       setSettings(updatedSettings);
-
-      // Add log entry
-      await dbService.addLogEntry(
-        'Einstellungen aktualisiert',
-        'Die Einstellungen wurden erfolgreich aktualisiert'
-      );
     } catch (error) {
       console.error('Failed to update settings:', error);
       throw error;
@@ -72,7 +70,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SettingsContext.Provider value={{ settings, updateSettings }}>
+    <SettingsContext.Provider value={{ settings, updateSettings, loading }}>
       {children}
     </SettingsContext.Provider>
   );

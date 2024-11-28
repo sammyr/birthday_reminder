@@ -1,10 +1,7 @@
 export interface Employee {
-  id: number;
-  name: string;
+  id: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone: string;
-  storeId: number;
-  role: string;
-  createdAt: Date;
-  updatedAt: Date;
+  mobilePhone: string;
 }

@@ -1,11 +1,12 @@
 export interface Birthday {
   id: string;
   name: string;
-  date: string;
+  date: string; // ISO date string
   reminderDays: number;
-  lastCheckup?: string;
-  email?: string;
   interests?: string;
   notes?: string;
-  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastNotified?: string; // Date when the last notification was sent
+  active?: boolean; // Whether notifications are enabled for this birthday
 }

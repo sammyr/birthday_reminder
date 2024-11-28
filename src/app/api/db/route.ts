@@ -1,31 +1,34 @@
 import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
+import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
-import { Employee } from '@/types/employee';
-import { Store } from '@/types/store';
-import { Shift } from '@/types/shift';
-import { LogEntry } from '@/types/log';
 
-interface DbData {
-  employees: Employee[];
-  stores: Store[];
-  shifts: Shift[];
-  logs: LogEntry[];
+const DB_FILE = path.join(process.cwd(), 'data', 'db.json');
+
+// Initialize database with default data if it doesn't exist
+const defaultData = {
+  stores: [],
+  settings: {
+    reminderDays: 7,
+    emailNotifications: false,
+    emailTemplate: 'Reminder: {name} has a birthday in {days} days!\n\nHi,\n\nThis is a reminder that {name} will turn {age} in {days} days.\n\nBest regards,\n{sender}',
+    emailAddress: ''
+  }
+};
+
+async function ensureDbExists() {
+  try {
+    await readFile(DB_FILE, 'utf-8');
+  } catch (error) {
+    // If file doesn't exist, create it with default data
+    await writeFile(DB_FILE, JSON.stringify(defaultData, null, 2), 'utf-8');
+  }
 }
-
-const dbPath = path.join(process.cwd(), 'data/db.json');
 
 export async function GET() {
   try {
-    const data = await fs.readFile(dbPath, 'utf8');
-    const jsonData = JSON.parse(data);
-    
-    // Initialize logs array if it doesn't exist
-    if (!jsonData.logs) {
-      jsonData.logs = [];
-    }
-    
-    return NextResponse.json(jsonData);
+    await ensureDbExists();
+    const data = await readFile(DB_FILE, 'utf-8');
+    return NextResponse.json(JSON.parse(data));
   } catch (error) {
     console.error('Error reading database:', error);
     return NextResponse.json(
@@ -37,14 +40,8 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    const data: DbData = await request.json();
-    
-    // Ensure logs array exists
-    if (!data.logs) {
-      data.logs = [];
-    }
-    
-    await fs.writeFile(dbPath, JSON.stringify(data, null, 2));
+    const data = await request.json();
+    await writeFile(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error writing to database:', error);
