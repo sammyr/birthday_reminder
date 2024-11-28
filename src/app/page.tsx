@@ -606,7 +606,7 @@ export default function Home() {
             </div>
             Neuen Geburtstag hinzufügen
           </h2>
-          <p className="text-gray-600 mt-2">Füge einen neuen Geburtstag hinzu und verpasse keine Feier mehr.</p>
+          <p className="text-gray-600 mt-2">Füge einen neuen Geburtstag hinzu und verpasse kein gratis Buffet mehr.</p>
         </div>
         
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
